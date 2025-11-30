@@ -92,96 +92,79 @@ public class KnapsackSolver {
      */
     private GroupResult solveForGroup(int groupIndex, ArrayList<Item> groupItems) {
         int m = groupItems.size();
-        
-        // Initialize DP tables
-        // Time Complexity: O(m * T) for initialization
-        // Space Complexity: O(m * T) for DP table and selection tracking
-        int[][] dp = new int[m + 1][T + 1];
-        @SuppressWarnings("unchecked")
-        ArrayList<Item>[][] selection = new ArrayList[m + 1][T + 1];
 
-        for (int i = 0; i <= m; i++) {
+        // DP over (k items picked, total time t used) -> max value
+        // dp[k][t] = max value using exactly k items and total dynamic time t (<= T)
+        int[][] dp = new int[T + 1][T + 1];
+        @SuppressWarnings("unchecked")
+        ArrayList<Item>[][] sel = new ArrayList[T + 1][T + 1];
+        for (int k = 0; k <= T; k++) {
             for (int t = 0; t <= T; t++) {
-                dp[i][t] = -1;
-                selection[i][t] = new ArrayList<>();
+                dp[k][t] = -1;
+                sel[k][t] = new ArrayList<>();
             }
         }
         dp[0][0] = 0;
 
-        // Main DP loop: consider each item and each possible count
-        // Time Complexity: O(m * T * k) where k is average selection size for copying
-        // Space Complexity: O(m * T * k) for storing all possible selections at each state
+        // Process each item once (0/1), updating states in a new table each time
         for (int i = 0; i < m; i++) {
-            Item currentItem = groupItems.get(i);
-            
-            for (int count = 0; count <= T; count++) {
-                if (dp[i][count] >= 0) {
-                    // Option 1: Skip current item
-                    if (dp[i][count] > dp[i + 1][count]) {
-                        dp[i + 1][count] = dp[i][count];
-                        selection[i + 1][count] = new ArrayList<>(selection[i][count]);
-                    }
+            Item it = groupItems.get(i);
 
-                    // Option 2: Take current item (time increases by 1 per item)
-                    int newCount = count + 1;
-                    if (newCount <= T) {
-                        int newValue = dp[i][count] + currentItem.getValue();
-                        if (newValue > dp[i + 1][newCount]) {
-                            dp[i + 1][newCount] = newValue;
-                            selection[i + 1][newCount] = new ArrayList<>(selection[i][count]);
-                            selection[i + 1][newCount].add(currentItem);
-                        }
+            int[][] next = new int[T + 1][T + 1];
+            @SuppressWarnings("unchecked")
+            ArrayList<Item>[][] nsel = new ArrayList[T + 1][T + 1];
+            for (int k = 0; k <= T; k++) {
+                for (int t = 0; t <= T; t++) {
+                    next[k][t] = dp[k][t];
+                    nsel[k][t] = sel[k][t]; // safe to reference; we copy only on changes
+                }
+            }
+
+            for (int k = 0; k <= T - 1; k++) {
+                int cost = it.getBaseWeight() + R * k; // dynamic cost at position k
+                if (cost > T) continue;
+                for (int t = 0; t + cost <= T; t++) {
+                    if (dp[k][t] < 0) continue;
+                    int nk = k + 1;
+                    int nt = t + cost;
+                    int nv = dp[k][t] + it.getValue();
+                    if (nv > next[nk][nt]) {
+                        next[nk][nt] = nv;
+                        ArrayList<Item> picked = new ArrayList<>(sel[k][t]);
+                        picked.add(it);
+                        nsel[nk][nt] = picked;
                     }
                 }
             }
+
+            dp = next;
+            sel = nsel;
         }
 
-        // Find the best selection from all possible counts
-        // Time Complexity: O(T * k) where k is selection size (for copying and calculating)
-        // Space Complexity: O(k) for storing the best selection
-        int maxGroupValue = 0;
-        int bestTimeUsed = Integer.MAX_VALUE;
-        ArrayList<Item> bestSelection = new ArrayList<>();
-        
-        for (int count = 0; count <= T; count++) {
-            if (dp[m][count] > maxGroupValue) {
-                maxGroupValue = dp[m][count];
-                bestSelection = new ArrayList<>(selection[m][count]);
-                bestTimeUsed = calculateDynamicTime(bestSelection);
-            } else if (dp[m][count] == maxGroupValue && dp[m][count] >= 0) {
-                ArrayList<Item> candidateSelection = selection[m][count];
-                int candidateTime = calculateDynamicTime(candidateSelection);
-                if (candidateTime < bestTimeUsed) {
-                    bestTimeUsed = candidateTime;
-                    bestSelection = new ArrayList<>(candidateSelection);
+        // Find best over all (k, t <= T)
+        int bestVal = 0;
+        int bestK = 0;
+        int bestT = 0;
+        ArrayList<Item> bestSel = new ArrayList<>();
+        for (int k = 0; k <= T; k++) {
+            for (int t = 0; t <= T; t++) {
+                if (dp[k][t] > bestVal) {
+                    bestVal = dp[k][t];
+                    bestK = k;
+                    bestT = t;
+                    bestSel = sel[k][t];
                 }
             }
         }
 
         return new GroupResult(
             groupIndex,
-            bestSelection.size(),
-            bestTimeUsed,
-            maxGroupValue,
-            new ArrayList<>(bestSelection)
+            bestK,
+            bestT,
+            bestVal,
+            new ArrayList<>(bestSel)
         );
     }
 
-    /**
-     * Calculates the total dynamic time/weight for a selection of items.
-     * Time Complexity: O(k) where k is the number of items in selection
-     * Space Complexity: O(1) - Only uses constant extra space
-     * 
-     * @param selection List of selected items
-     * @return Total dynamic time/weight
-     */
-    private int calculateDynamicTime(ArrayList<Item> selection) {
-        int total = 0;
-        int step = 0;
-        for (Item item : selection) {
-            total += item.getDynamicWeight(step, R);
-            step++;
-        }
-        return total;
-    }
+    // Dynamic time for a selection of k items is captured directly by t in DP state.
 }

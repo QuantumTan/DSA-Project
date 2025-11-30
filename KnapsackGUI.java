@@ -31,7 +31,8 @@ public class KnapsackGUI extends JFrame {
      * Constructs the main GUI window.
      */
     public KnapsackGUI() {
-        items = new ArrayList<>();
+        // Initialize with expected capacity to reduce reallocations
+        items = new ArrayList<>(60); // Expected sample data size
         initializeGUI();
     }
 
@@ -477,26 +478,26 @@ public class KnapsackGUI extends JFrame {
         addItemToTable(149, 47, 1, "Available");
         
         // Group 2 - 20 items (only if G >= 3)
-        addItemToTable(170, 60, 0, "Available");
-        addItemToTable(180, 65, 0, "Available");
-        addItemToTable(190, 70, 0, "Available");
-        addItemToTable(175, 62, 0, "Available");
-        addItemToTable(185, 67, 0, "Available");
-        addItemToTable(195, 72, 0, "Available");
-        addItemToTable(172, 61, 0, "Available");
-        addItemToTable(182, 66, 0, "Available");
-        addItemToTable(192, 71, 0, "Available");
-        addItemToTable(178, 64, 0, "Available");
-        addItemToTable(188, 68, 1, "Available");
-        addItemToTable(198, 73, 1, "Available");
-        addItemToTable(173, 63, 1, "Available");
-        addItemToTable(183, 69, 1, "Available");
-        addItemToTable(200, 75, 1, "Available");
-        addItemToTable(176, 59, 1, "Available");
-        addItemToTable(186, 66, 1, "Available");
-        addItemToTable(196, 74, 1, "Available");
-        addItemToTable(179, 62, 1, "Available");
-        addItemToTable(189, 67, 1, "Available");
+        addItemToTable(170, 60, 2, "Available");
+        addItemToTable(180, 65, 2, "Available");
+        addItemToTable(190, 70, 2, "Available");
+        addItemToTable(175, 62, 2, "Available");
+        addItemToTable(185, 67, 2, "Available");
+        addItemToTable(195, 72, 2, "Available");
+        addItemToTable(172, 61, 2, "Available");
+        addItemToTable(182, 66, 2, "Available");
+        addItemToTable(192, 71, 2, "Available");
+        addItemToTable(178, 64, 2, "Available");
+        addItemToTable(188, 68, 2, "Available");
+        addItemToTable(198, 73, 2, "Available");
+        addItemToTable(173, 63, 2, "Available");
+        addItemToTable(183, 69, 2, "Available");
+        addItemToTable(200, 75, 2, "Available");
+        addItemToTable(176, 59, 2, "Available");
+        addItemToTable(186, 66, 2, "Available");
+        addItemToTable(196, 74, 2, "Available");
+        addItemToTable(179, 62, 2, "Available");
+        addItemToTable(189, 67, 2, "Available");
     }
 
     /**
@@ -562,6 +563,7 @@ public class KnapsackGUI extends JFrame {
 
     /**
      * Shows a dialog for adding a new item.
+     * Validates all inputs to prevent non-numeric and negative values.
      */
     private void showAddItemDialog() {
         try {
@@ -585,40 +587,40 @@ public class KnapsackGUI extends JFrame {
             );
             
             if (result == JOptionPane.OK_OPTION) {
-                int value = Integer.parseInt(valueField.getText());
-                int weight = Integer.parseInt(weightField.getText());
-                int group = Integer.parseInt(groupField.getText());
-                int G = Integer.parseInt(tfG.getText());
+                // Validate G parameter first
+                int G = validateAndParseInt(tfG.getText(), "Groups (G)", 1, 1000);
                 
-                if (group < 0 || group >= G) {
-                    showMessage(
-                        "Group must be between 0 and " + (G - 1) + "!", 
-                        "Invalid Group"
-                    );
-                    return;
-                }
+                // Validate item inputs with proper ranges
+                int value = validateAndParseInt(valueField.getText(), "Value", 1, 1000000);
+                int weight = validateAndParseInt(weightField.getText(), "Weight", 1, 1000000);
+                int group = validateAndParseInt(groupField.getText(), "Group", 0, G - 1);
                 
                 addItemToTable(value, weight, group, "Available");
                 showMessage("Item added successfully!", "Success");
             }
-        } catch (NumberFormatException ex) {
-            showMessage("Please enter valid numbers!", "Error");
+        } catch (IllegalArgumentException ex) {
+            showMessage(ex.getMessage(), "Validation Error");
         }
     }
 
     /**
      * Solves the knapsack problem using the current parameters and items.
+     * Validates all inputs and optimizes memory before solving.
      */
     private void solveProblem() {
         try {
-            int G = Integer.parseInt(tfG.getText());
-            int T = Integer.parseInt(tfT.getText());
-            int R = Integer.parseInt(tfR.getText());
+            // Validate parameters with proper ranges
+            int G = validateAndParseInt(tfG.getText(), "Groups (G)", 1, 1000);
+            int T = validateAndParseInt(tfT.getText(), "Time Limit (T)", 1, 10000);
+            int R = validateAndParseInt(tfR.getText(), "Rate (R)", 1, 1000);
 
             if (items.isEmpty()) {
                 showMessage("Please add some items first!", "Error");
                 return;
             }
+
+            // Optimize memory before solving
+            optimizeMemory();
 
             resultArea.setText("Solving knapsack problem... Please wait...\n");
             
@@ -636,8 +638,8 @@ public class KnapsackGUI extends JFrame {
                 }
             }).start();
 
-        } catch (NumberFormatException ex) {
-            showMessage("Please enter valid parameters!", "Error");
+        } catch (IllegalArgumentException ex) {
+            showMessage(ex.getMessage(), "Validation Error");
         }
     }
 
@@ -672,12 +674,15 @@ public class KnapsackGUI extends JFrame {
         if (confirm == JOptionPane.YES_OPTION) {
             tableModel.setRowCount(0);
             items.clear();
+            items.trimToSize(); // Optimize memory after clearing
+            resultArea.setText(ResultFormatter.getInitialResultText());
             showMessage("All items cleared!", "Success");
         }
     }
 
     /**
      * Resets all parameters and clears all data.
+     * Optimizes memory after reset.
      */
     private void resetAll() {
         int confirm = JOptionPane.showConfirmDialog(
@@ -693,7 +698,8 @@ public class KnapsackGUI extends JFrame {
             tfR.setText("1");
             tableModel.setRowCount(0);
             items.clear();
-            resultArea.setText("");
+            items.trimToSize(); // Optimize memory after clearing
+            resultArea.setText(ResultFormatter.getInitialResultText());
             showMessage("All data reset to defaults!", "Success");
         }
     }
@@ -704,6 +710,65 @@ public class KnapsackGUI extends JFrame {
     private void showMessage(String message, String title) {
         JOptionPane.showMessageDialog(this, message, title, 
                                      JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Validates and parses an integer from a text field with range checking.
+     * Time Complexity: O(n) where n is the string length
+     * Space Complexity: O(1)
+     * 
+     * @param text The string to parse
+     * @param fieldName Name of the field for error messages
+     * @param min Minimum allowed value (inclusive)
+     * @param max Maximum allowed value (inclusive)
+     * @return Parsed integer value
+     * @throws IllegalArgumentException if validation fails
+     */
+    private int validateAndParseInt(String text, String fieldName, int min, int max) 
+            throws IllegalArgumentException {
+        if (text == null || text.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " cannot be empty.");
+        }
+        
+        String trimmed = text.trim();
+        
+        // Check for non-numeric characters
+        if (!trimmed.matches("-?\\d+")) {
+            throw new IllegalArgumentException(
+                fieldName + " must be a valid integer. Got: '" + trimmed + "'"
+            );
+        }
+        
+        try {
+            int value = Integer.parseInt(trimmed);
+            
+            // Range validation
+            if (value < min || value > max) {
+                throw new IllegalArgumentException(
+                    String.format("%s must be between %d and %d. Got: %d", 
+                                fieldName, min, max, value)
+                );
+            }
+            
+            return value;
+        } catch (NumberFormatException e) {
+            // Handle overflow/underflow
+            throw new IllegalArgumentException(
+                fieldName + " is out of valid integer range. Got: '" + trimmed + "'"
+            );
+        }
+    }
+
+    /**
+     * Optimizes memory usage by trimming ArrayList capacity to match size.
+     * Time Complexity: O(n) - creates new array and copies elements
+     * Space Complexity: O(n) - temporarily doubles memory during trimming
+     */
+    private void optimizeMemory() {
+        if (items != null) {
+            // Trim backing array capacity to match current size.
+            items.trimToSize();
+        }
     }
 
     // ==================== Main Method ====================
