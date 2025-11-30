@@ -98,19 +98,13 @@ public class ResultFormatter {
      * Generates initial/default result text.
      */
     public static String getInitialResultText() {
+        // Provide a minimal initial text without group/selection sections,
+        // so nothing is shown if there are no computed results yet.
         return "══════════════════════════════════════════════════════════════\n" +
                "                        OUTPUT RESULT                        \n" +
                "══════════════════════════════════════════════════════════════\n\n" +
                "OUTPUT:\n" +
-               "160\n\n" +
-               "Group Results:\n" +
-               "• Group 0: 2 items, Dynamic Time used: 6, Max Value = 25\n" +
-               "• Group 1: 2 items, Dynamic Time used: 10, Max Value = 45\n" +
-               "• Group 2: 1 items, Dynamic Time used: 6, Max Value = 30\n\n" +
-               "Optimal Selection:\n" +
-               "Group 0: (v=10, w=2) → (v=15, w=3)\n" +
-               "Group 1: (v=20, w=4) → (v=25, w=5)\n" +
-               "Group 2: (v=30, w=6)\n\n" +
+               "0\n\n" +
                "Execution Time Result:\n" +
                "0.000 ms\n";
     }

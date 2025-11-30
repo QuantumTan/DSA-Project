@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 /**
- * Stores the result of solving the knapsack problem for a single group.
+ * Represents the result of solving the knapsack problem for a single group.
  */
 public class GroupResult {
     private int groupIndex;

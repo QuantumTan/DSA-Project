@@ -143,14 +143,14 @@ public class KnapsackGUI extends JFrame {
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.4;
         panel.add(createStyledLabel("Time Limit (T):"), gbc);
         gbc.gridx = 1; gbc.weightx = 0.6;
-        tfT = createStyledTextField("5");
+        tfT = createStyledTextField("100");
         panel.add(tfT, gbc);
 
         // Rate (R)
         gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.4;
         panel.add(createStyledLabel("Rate (R):"), gbc);
         gbc.gridx = 1; gbc.weightx = 0.6;
-        tfR = createStyledTextField("1");
+        tfR = createStyledTextField("0");
         panel.add(tfR, gbc);
 
         return panel;
@@ -612,7 +612,7 @@ public class KnapsackGUI extends JFrame {
             // Validate parameters with proper ranges
             int G = validateAndParseInt(tfG.getText(), "Groups (G)", 1, 1000);
             int T = validateAndParseInt(tfT.getText(), "Time Limit (T)", 1, 10000);
-            int R = validateAndParseInt(tfR.getText(), "Rate (R)", 1, 1000);
+            int R = validateAndParseInt(tfR.getText(), "Rate (R)", 0, 1000);
 
             if (items.isEmpty()) {
                 showMessage("Please add some items first!", "Error");
@@ -694,8 +694,8 @@ public class KnapsackGUI extends JFrame {
         
         if (confirm == JOptionPane.YES_OPTION) {
             tfG.setText("2");
-            tfT.setText("5");
-            tfR.setText("1");
+            tfT.setText("100");
+            tfR.setText("0");
             tableModel.setRowCount(0);
             items.clear();
             items.trimToSize(); // Optimize memory after clearing

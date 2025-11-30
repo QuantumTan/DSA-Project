@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 /**
- * Stores the complete result of solving the knapsack problem across all groups.
+ * Represents the complete result of solving the knapsack problem across all groups.
  */
 public class SolverResult {
     private int maxValue;
