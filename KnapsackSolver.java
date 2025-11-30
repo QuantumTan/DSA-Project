@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class KnapsackSolver {
     private int G; // Number of groups
     private int T; // Time limit
+    @SuppressWarnings("unused")
     private int R; // Rate multiplier (unused in classic mode)
     private ArrayList<Item> items;
 

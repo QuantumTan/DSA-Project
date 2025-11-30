@@ -1,17 +1,22 @@
-/GroupResult.class
-/Item.class
-/KnapsackGUI$1.class
-/KnapsackGUI$2.class
-/KnapsackGUI$3.class
-/KnapsackGUI$4.class
-/KnapsackGUI$AddItemListener.class
-/KnapsackGUI$ClearListener.class
-/KnapsackGUI$ResetListener.class
-/KnapsackGUI$SolveListener.class
-/KnapsackGUI.class
-/KnapsackSolver.class
-/Main.class
-/ResultFormatter.class
-/SolverResult.class
-/UIConstants.class
-/.metadata/
+# Compiled class files
+*.class
+
+# IDE files
+.classpath
+.project
+.settings/
+.vscode/
+*.iml
+.idea/
+.metadata/
+
+# Build directories
+bin/
+build/
+out/
+target/
+
+# OS files
+.DS_Store
+Thumbs.db
+
